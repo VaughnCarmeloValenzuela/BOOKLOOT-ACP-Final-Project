@@ -56,35 +56,35 @@ This window will pop up after running the code:
 
 Put your name the password you want and pick wich branch of library you want.
 
-![image](https://github.com/user-attachments/assets/28761252-1345-477a-b588-6bad9d198648)
+![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/SignUp.png)
 
 After signing up, a message box will appear to give your Membership ID.
-![image](https://github.com/user-attachments/assets/de9500cb-d2cb-4497-87c1-7c1cdf4cc737)
+![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/SignUp1.png)
 
 **Log in:**
 <br>Put in the ID that is given to you ater signing in and your password.
-<br>![image](https://github.com/user-attachments/assets/79ca84a8-bed6-4d64-95bd-5ef64701f79a)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/Login.png)
 
 **Main Menu Window**
 <br>Press the button of wich task you want
-<br>![image](https://github.com/user-attachments/assets/e8b1daee-eb06-4181-b797-a76b5a7a299a)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/MainMenu.png)
 
 
 **Borrow books**
 <br>Click the book that you want to borrow and press the `Borrow` button.
-<br>![image](https://github.com/user-attachments/assets/493efbce-e1c7-4827-b5e2-bc7017a594cf)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/Borrow.png)
 
 **Return books:**
 <br>Click the book that you want to return and press the `Return` button.
-<br>![image](https://github.com/user-attachments/assets/49d13a0b-154d-4808-951c-8a7dba40c8dc)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/Return.png)
 
 **Reserve books:**
 <br>Only book that are borrowed can be reserved.
-<br>![image](https://github.com/user-attachments/assets/89aa1c94-c93b-4dd4-9c75-adf4ca41a74d)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/Reserve.png)
 
 **View Profile**
 <br>Shows the users information.
-<br>![image](https://github.com/user-attachments/assets/ef88f14e-fd75-4f25-97b5-8e4f9791bf8d)
+<br>![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/ViewPofile.png)
 
 
 
