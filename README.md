@@ -47,7 +47,7 @@ The **BOOK LOOT: Library Management System** can be understood and used with the
 
 This window will pop up after running the code:
 
-![image](https://github.com/user-attachments/assets/c175e15e-8262-4eca-b7d4-7dac153aab9d)
+![image](https://github.com/VaughnCarmeloValenzuela/BOOKLOOT-ACP-Final-Project/blob/main/image/Welcome.png)
 
 
 ### Example Usage: 
