@@ -1,0 +1,314 @@
+import hashlib
+import tkinter as tk
+from tkinter import ttk, messagebox, simpledialog
+
+class Book:
+    def __init__(self, title, author, genre, available=True, branch="Main"):
+        self.title = title
+        self.author = author
+        self.genre = genre
+        self.available = available
+        self.branch = branch
+        self.reservations = []
+
+    def __str__(self):
+        return f"Title: {self.title}\nAuthor: {self.author}\nGenre: {self.genre}\nAvailable: {self.available}\nBranch: {self.branch}"
+
+class Member:
+    def __init__(self, name, membership_id, password, branch="Main"):
+        self.name = name
+        self.membership_id = membership_id
+        self.password = hashlib.sha256(password.encode()).hexdigest()
+        self.borrowed_books = []
+        self.reservations = []
+        self.branch = branch
+
+    def __str__(self):
+        borrowed = ", ".join(book.title for book in self.borrowed_books) or "None"
+        reserved = ", ".join(book.title for book in self.reservations) or "None"
+        return (f"Name: {self.name}\nMembership ID: {self.membership_id}\nBranch: {self.branch}"
+                f"\nBorrowed Books: {borrowed}\nReservations: {reserved}")
+
+books = [Book("The Hitchhiker's Guide to the Galaxy", "Douglas Adams", "Science Fiction", branch="Main"),
+    Book("Pride and Prejudice", "Jane Austen", "Romance", branch="Central"),
+    Book("To Kill a Mockingbird", "Harper Lee", "Historical Fiction", branch="Main"),
+    Book("1984", "George Orwell", "Dystopian", branch="Central"),
+    Book("The Lord of the Rings", "J.R.R. Tolkien", "Fantasy", branch="Main"),
+    Book("The Great Gatsby", "F. Scott Fitzgerald", "Classic", branch="Central"),
+    Book("The Hobbit", "J.R.R. Tolkien", "Fantasy", branch="Main"),
+    Book("And Then There Were None", "Agatha Christie", "Mystery", branch="Central"),
+    Book("Harry Potter and the Sorcerer's Stone", "J.K. Rowling", "Fantasy", branch="Main"),
+    Book("Harry Potter and the Chamber of Secrets", "J.K. Rowling", "Fantasy", branch="Central"),
+    Book("Harry Potter and the Prisoner of Azkaban", "J.K. Rowling", "Fantasy", branch="Main"),
+    Book("Harry Potter and the Goblet of Fire", "J.K. Rowling", "Fantasy", branch="Central"),
+    Book("Harry Potter and the Order of the Phoenix", "J.K. Rowling", "Fantasy", branch="Main"),
+    Book("Harry Potter and the Half-Blood Prince", "J.K. Rowling", "Fantasy", branch="Central"),
+    Book("Harry Potter and the Deathly Hallows", "J.K. Rowling", "Fantasy", branch="Main")]
+members = []
+next_membership_id = 101
+current_member = None
+root = None
+
+def reserve_book():
+    if not current_member:
+        messagebox.showerror("Error", "Please log in first.")
+        return
+
+    branch_books = [book for book in books if not book.available and book.branch == current_member.branch]
+    if not branch_books:
+        messagebox.showinfo("Info", "No unavailable books at your branch to reserve.")
+        return
+
+    def handle_reserve():
+        selection = reserve_listbox.curselection()
+        if selection:
+            index = selection[0]
+            book_to_reserve = branch_books[index]
+            if current_member in book_to_reserve.reservations:
+                messagebox.showinfo("Info", f"You have already reserved '{book_to_reserve.title}'.")
+            else:
+                book_to_reserve.reservations.append(current_member)
+                current_member.reservations.append(book_to_reserve)
+                messagebox.showinfo("Success", f"You have reserved '{book_to_reserve.title}'.")
+            reserve_window.destroy()
+        else:
+            messagebox.showerror("Error", "Please select a book to reserve.")
+
+    reserve_window = tk.Toplevel()
+    reserve_window.title("Reserve Book")
+    reserve_window.geometry("500x300")
+    reserve_window.configure(bg="#e3c18f")
+
+    tk.Label(reserve_window, text=f"Books available for reservation at {current_member.branch} branch:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+
+    global reserve_listbox
+    reserve_listbox = tk.Listbox(reserve_window, width=60)
+    for book in branch_books:
+        reserve_listbox.insert(tk.END, f"{book.title} by {book.author}")
+    reserve_listbox.configure(font=("Times new roman", 10), height=10)
+    reserve_listbox.pack(pady=5)
+
+    reserve_button = ttk.Button(reserve_window, text="Reserve", command=handle_reserve, style='TButton')
+    reserve_button.pack(pady=10)
+
+def login_action(membership_id, password, login_window):
+    global current_member
+    try:
+        membership_id = int(membership_id)
+    except ValueError:
+        messagebox.showerror("Error", "Membership ID must be a number.")
+        return
+
+    member = next((m for m in members if m.membership_id == membership_id), None)
+    if not member:
+        messagebox.showerror("Error", "Membership ID not found.")
+        return
+
+    if member.password != hashlib.sha256(password.encode()).hexdigest():
+        messagebox.showerror("Error", "Incorrect password.")
+        return
+
+    current_member = member
+    messagebox.showinfo("Welcome", f"Welcome, {member.name}!")
+    login_window.destroy()
+    main_window()
+
+def signup_action(name, password, branch, signup_window):
+    global next_membership_id, current_member
+    if not name or not password:
+        messagebox.showerror("Error", "All fields are required.")
+        return
+
+    membership_id = next_membership_id
+    next_membership_id += 1
+    member = Member(name, membership_id, password, branch)
+    members.append(member)
+    current_member = member
+    messagebox.showinfo("Success", f"Signup successful! Your Membership ID is {membership_id}.")
+    signup_window.destroy()
+    main_window()
+
+def borrow_book():
+    if not current_member:
+        messagebox.showerror("Error", "Please log in first.")
+        return
+
+    branch_books = [book for book in books if book.available and book.branch == current_member.branch]
+    if not branch_books:
+        messagebox.showinfo("Info", "No books available at your branch.")
+        return
+
+    def handle_borrow():
+        selection = borrow_listbox.curselection()
+        if selection:
+            index = selection[0]
+            book_to_borrow = branch_books[index]
+            if not book_to_borrow.available:
+                messagebox.showerror("Error", "This book is already borrowed.")
+                return
+            book_to_borrow.available = False
+            current_member.borrowed_books.append(book_to_borrow)
+            messagebox.showinfo("Success", f"You have borrowed '{book_to_borrow.title}'!")
+            borrow_window.destroy()
+        else:
+            messagebox.showerror("Error", "Please select a book to borrow.")
+
+    borrow_window = tk.Toplevel()
+    borrow_window.title("Borrow Book")
+    borrow_window.geometry("500x300")
+    borrow_window.configure(bg="#e3c18f")
+
+    tk.Label(borrow_window, text=f"Available books at {current_member.branch} branch:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+
+    global borrow_listbox
+    borrow_listbox = tk.Listbox(borrow_window, width= 60)
+    for book in branch_books:
+        borrow_listbox.insert(tk.END, f"{book.title} by {book.author}")
+    borrow_listbox.configure(font=("Times new roman", 10), height=10)
+    borrow_listbox.pack(pady=5)
+
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 12, "bold"), padding=(10, 5))
+    borrow_button = ttk.Button(borrow_window, text="Borrow", command=handle_borrow, style='TButton')
+    borrow_button.pack(pady=10)
+
+def return_book():
+    if not current_member:
+        messagebox.showerror("Error", "Please log in first.")
+        return
+
+    borrowed_books = current_member.borrowed_books
+    if not borrowed_books:
+        messagebox.showinfo("Info", "You have no borrowed books.")
+        return
+
+    def handle_return():
+        selection = return_listbox.curselection()
+        if selection:
+            index = selection[0]
+            book_to_return = borrowed_books[index]
+            book_to_return.available = True
+            current_member.borrowed_books.remove(book_to_return)
+            messagebox.showinfo("Success", f"You have returned '{book_to_return.title}'.")
+            return_window.destroy()
+        else:
+            messagebox.showerror("Error", "Please select a book to return.")
+
+    return_window = tk.Toplevel()
+    return_window.title("Return Book")
+    return_window.geometry("500x300")
+    return_window.configure(bg="#e3c18f")
+
+    tk.Label(return_window, text="Your borrowed books:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+
+    global return_listbox
+    return_listbox = tk.Listbox(return_window, width=60)
+    for book in borrowed_books:
+        return_listbox.insert(tk.END, book.title)
+    return_listbox.pack(pady=5)
+
+    return_button = ttk.Button(return_window, text="Return", command=handle_return, style='TButton')
+    return_button.pack(pady=10)
+
+def view_member_profile():
+    if not current_member:
+        messagebox.showerror("Error", "Please log in first.")
+        return
+
+    profile_window = tk.Toplevel()
+    profile_window.title("Member Profile")
+    profile_window.geometry("500x300")
+    profile_window.configure(bg="#e3c18f")
+
+    tk.Label(profile_window, text=f"Name: {current_member.name}", bg="#e3c18f", font=("Times new roman", 15, "bold")).grid(row=0, column=0, sticky="w", padx=10, pady=10)
+    tk.Label(profile_window, text=f"Membership ID: {current_member.membership_id}", bg="#e3c18f", font=("Times new roman", 15, "bold")).grid(row=1, column=0, sticky="w", padx=10, pady=10)
+    tk.Label(profile_window, text=f"Branch: {current_member.branch}", bg="#e3c18f", font=("Times new roman", 15, "bold")).grid(row=2, column=0, sticky="w", padx=10, pady=10)
+    tk.Label(profile_window, text=f"Borrowed Books: {', '.join(book.title for book in current_member.borrowed_books) or 'None'}", bg="#e3c18f", font=("Times new roman", 15, "bold")).grid(row=3, column=0, sticky="w", padx=10, pady=10)
+    tk.Label(profile_window, text=f"Reservations: {', '.join(book.title for book in current_member.reservations) or 'None'}", bg="#e3c18f", font=("Times new roman", 15, "bold")).grid(row=4, column=0, sticky="w", padx=10, pady=10)
+
+def logout(root):
+    global current_member
+    current_member = None
+    root.destroy()
+    welcome_window()
+
+def welcome_window():
+    global root
+    root = tk.Tk()
+    root.title("BOOK LOOT")
+    root.geometry("500x300")
+    root.configure(bg="#e3c18f")
+
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 12, "bold"), padding=(10, 5))
+
+    welcome_label = tk.Label(root, text="BOOK LOOT \nLibrary Management System", bg="#e3c18f", font=("Small Fonts", 20,"bold"))
+    welcome_label.pack(pady=20)
+    login_button = ttk.Button(root, text="Log In", command=lambda: [root.destroy(), login_window()])
+    login_button.pack(pady=10)
+    signup_button = ttk.Button(root, text="Sign Up", command=lambda: [root.destroy(), signup_window()])
+    signup_button.pack(pady=10)
+
+def login_window():
+    root = tk.Tk()
+    root.title("Login")
+    root.geometry("500x300")
+    root.configure(bg="#e3c18f")
+
+    tk.Label(root, text="Membership ID:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+    membership_id_entry = tk.Entry(root, font=("Times new roman", 12, "bold"))
+    membership_id_entry.pack(pady=5)
+
+    tk.Label(root, text="Password:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+    password_entry = tk.Entry(root, show="*", font=("Times new roman", 12, "bold"))
+    password_entry.pack(pady=5)
+
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 12, "bold"), padding=(10, 5))
+
+    ttk.Button(root, text="Login", command=lambda: login_action(membership_id_entry.get(), password_entry.get(), root)).pack(pady=10)
+
+def signup_window():
+    root = tk.Tk()
+    root.title("Signup")
+    root.geometry("500x300")
+    root.configure(bg="#e3c18f")
+
+    tk.Label(root, text="Name:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+    name_entry = tk.Entry(root, font=("Times new roman", 12, "bold"))
+    name_entry.pack(pady=10)
+
+    tk.Label(root, text="Password:", bg="#e3c18f", font=("Times new roman", 15, "bold")).pack(pady=5)
+    password_entry = tk.Entry(root, font=("Times new roman", 12, "bold"),show="*")
+    password_entry.pack(pady=5)
+
+    tk.Label(root, text="Branch:", bg="#e3c18f", font=("Times new roman", 12, "bold")).pack(pady=5)
+    branch_var = tk.StringVar(value="Main")
+    branch_menu = ttk.Combobox(root, textvariable=branch_var, values=["Main", "Central"], state="readonly", font=("Times new roman", 12, "bold"))
+    branch_menu.pack(pady=5)
+
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 12, "bold"), padding=(10, 5))
+
+    ttk.Button(root, text="Signup", command=lambda: [signup_action(name_entry.get(), password_entry.get(), branch_var.get(), root), root.destroy()]).pack(pady=10)
+
+def main_window():
+    root = tk.Tk()
+    root.title("BOOK LOOT")
+    root.geometry("500x300")
+    root.configure(bg="#e3c18f")
+
+    tk.Label(root, text=f"Welcome, {current_member.name}!", bg="#e3c18f", font=("Times new roman", 16, "bold")).pack(pady=10)
+
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 12, "bold"), padding=(10, 5))
+
+    ttk.Button(root, text="Borrow Book", command=borrow_book).pack(pady=5)
+    ttk.Button(root, text="Return Book", command=return_book).pack(pady=5)
+    ttk.Button(root, text="Reserve Book", command=reserve_book).pack(pady=5)
+    ttk.Button(root, text="View Profile", command=view_member_profile).pack(pady=5)
+    ttk.Button(root, text="Logout", command=lambda: logout(root)).pack(pady=5)
+
+welcome_window()
+
+root.mainloop() 
